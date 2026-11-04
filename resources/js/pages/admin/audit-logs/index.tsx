@@ -8,6 +8,9 @@ const filters = [
     { value: 'all', label: 'All events' },
     { value: 'sign-in', label: 'Sign-in' },
     { value: 'accounts', label: 'Account changes' },
+    { value: 'records', label: 'Record changes' },
+    { value: 'files', label: 'Downloads and exports' },
+    { value: 'system', label: 'Backups' },
 ];
 
 export default function AuditLogIndex({ logs, filter }: { logs: Paginated<AuditEntry>; filter: string }) {

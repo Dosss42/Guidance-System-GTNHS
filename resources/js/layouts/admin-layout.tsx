@@ -7,7 +7,8 @@ const navigation: { code: string; label: string; href?: string }[] = [
     { code: 'AC', label: 'Accounts', href: '/admin/users' },
     { code: 'AL', label: 'Audit log', href: '/admin/audit-logs' },
     { code: 'CF', label: 'Settings' },
-    { code: 'BK', label: 'Backup & recovery' },
+    { code: 'BK', label: 'Backup & recovery', href: '/admin/backups' },
+    { code: 'MY', label: 'My account', href: '/account' },
 ];
 
 /**

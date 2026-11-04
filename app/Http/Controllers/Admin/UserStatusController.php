@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\AuditAction;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\AuditLogger;
@@ -31,6 +32,10 @@ class UserStatusController extends Controller
         }
 
         $user->update(['is_active' => $isActive]);
+
+        if (! $isActive) {
+            AccountController::endSessionsFor($user);
+        }
 
         $audit->record($isActive ? AuditAction::AccountActivated : AuditAction::AccountDeactivated, 'accounts', $user);
 

@@ -33,8 +33,10 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
-            'throw' => false,
+            // Guidance documents are confidential: never serve this disk through a URL.
+            // Downloads go through the authorised, audited counselor route instead.
+            'serve' => false,
+            'throw' => true,
             'report' => false,
         ],
 

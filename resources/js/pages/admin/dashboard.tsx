@@ -1,5 +1,5 @@
 import { AuditTable } from '@/components/audit-table';
-import { buttonClasses, Card, FlashStatus } from '@/components/ui';
+import { buttonClasses, Card, FlashStatus, formatDateTime, Stamp } from '@/components/ui';
 import AdminLayout from '@/layouts/admin-layout';
 import type { AuditEntry } from '@/types';
 import { Link } from '@inertiajs/react';
@@ -11,7 +11,12 @@ interface Stats {
     failedSignIns: number;
 }
 
-export default function AdminDashboard({ stats, recentEvents }: { stats: Stats; recentEvents: AuditEntry[] }) {
+interface BackupStatus {
+    passwordConfigured: boolean;
+    latest: { name: string; createdAt: string; verifiedOk: boolean | null; verifiedAt: string | null } | null;
+}
+
+export default function AdminDashboard({ stats, recentEvents, backup }: { stats: Stats; recentEvents: AuditEntry[]; backup: BackupStatus }) {
     const tiles = [
         { label: 'active counselor accounts', value: stats.activeCounselors, href: '/admin/users' },
         { label: 'active administrator accounts', value: stats.activeAdministrators, href: '/admin/users' },
@@ -53,11 +58,30 @@ export default function AdminDashboard({ stats, recentEvents }: { stats: Stats; 
                 <AuditTable entries={recentEvents} />
             </Card>
 
-            <Card title="Backup and recovery">
-                <p className="px-5 py-4 text-sm text-ink-2">
-                    Backups aren't set up in the application yet. Until they are, back up the MySQL database through the server. Keep the copies protected,
-                    because they contain student information.
-                </p>
+            <Card
+                title="Backup and recovery"
+                aside={
+                    <Link href="/admin/backups" className={buttonClasses.link}>
+                        Open backups
+                    </Link>
+                }
+            >
+                <div className="flex flex-wrap items-center gap-3 px-5 py-4 text-sm">
+                    {!backup.passwordConfigured ? (
+                        <p className="text-brick">Backups are switched off: BACKUP_PASSWORD is not set in the server's .env file.</p>
+                    ) : backup.latest === null ? (
+                        <p className="text-ochre">No backup has been made yet.</p>
+                    ) : (
+                        <>
+                            <span>
+                                Last backup <span className="font-mono">{formatDateTime(backup.latest.createdAt)}</span>
+                            </span>
+                            {backup.latest.verifiedOk === true && <Stamp tone="filed">Verified</Stamp>}
+                            {backup.latest.verifiedOk === false && <Stamp tone="brick">Failed check</Stamp>}
+                            {backup.latest.verifiedOk === null && <Stamp tone="ochre">Not checked</Stamp>}
+                        </>
+                    )}
+                </div>
             </Card>
         </AdminLayout>
     );

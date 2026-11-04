@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\AuditAction;
 use App\Enums\RoleSlug;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
@@ -88,7 +89,12 @@ class UserController extends Controller
             return back()->with('status', 'No changes to save.');
         }
 
+        $passwordReset = $user->isDirty('password');
         $user->save();
+
+        if ($passwordReset && ! $user->is($request->user())) {
+            AccountController::endSessionsFor($user);
+        }
 
         $audit->record(AuditAction::AccountUpdated, 'accounts', $user, "Changed: {$changedFields}");
 

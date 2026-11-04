@@ -1,5 +1,5 @@
-import { usePage } from '@inertiajs/react';
-import type { InputHTMLAttributes, ReactNode } from 'react';
+import { Link, usePage } from '@inertiajs/react';
+import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 
 /** The GTNHS seal. Decorative wherever the school name is written next to it. */
 export function Seal({ size = 40, ring = false }: { size?: number; ring?: boolean }) {
@@ -84,6 +84,51 @@ export function TextField({ label, name, error, hint, required, trailing, id, ..
     );
 }
 
+interface SelectFieldProps extends SelectHTMLAttributes<HTMLSelectElement> {
+    label: string;
+    name: string;
+    error?: string;
+    hint?: string;
+    required?: boolean;
+    children: ReactNode;
+}
+
+/** A labelled select with helper text and an error shown directly under it. */
+export function SelectField({ label, name, error, hint, required, id, children, ...selectProps }: SelectFieldProps) {
+    const fieldId = id ?? name;
+    const describedBy = [hint ? `${fieldId}-hint` : null, error ? `${fieldId}-error` : null].filter(Boolean).join(' ') || undefined;
+
+    return (
+        <div className="flex min-w-0 flex-col gap-1.5">
+            <label htmlFor={fieldId} className="text-sm font-semibold">
+                {label} {required && <span className="font-bold text-brick" aria-hidden="true">*</span>}
+            </label>
+            <select
+                id={fieldId}
+                name={name}
+                required={required}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={describedBy}
+                className={`h-11 w-full rounded bg-surface px-3 text-[15px] text-ink ${error ? 'border-[1.5px] border-brick' : 'border border-rule-2'}`}
+                {...selectProps}
+            >
+                {children}
+            </select>
+            {hint && !error && (
+                <span id={`${fieldId}-hint`} className="text-[13px] text-ink-2">
+                    {hint}
+                </span>
+            )}
+            {error && <FieldError id={`${fieldId}-error`}>{error}</FieldError>}
+        </div>
+    );
+}
+
+/** Stamp colours for enrollment statuses: done → filed, ended → neutral. */
+export function enrollmentTone(status: string): StampTone {
+    return status === 'enrolled' || status === 'completed' ? 'filed' : 'neutral';
+}
+
 export function FieldError({ id, children }: { id?: string; children: ReactNode }) {
     return (
         <span id={id} className="flex items-start gap-1.5 text-[13px] font-semibold text-brick">
@@ -120,7 +165,7 @@ export function EnvironmentBanner() {
     }
 
     return (
-        <div className="border-b border-rule bg-ochre-soft px-4 py-1.5 text-center font-mono text-[11px] tracking-[0.08em] text-ochre">
+        <div className="border-b border-rule bg-ochre-soft px-4 py-1.5 text-center font-mono text-[11px] tracking-[0.08em] text-ochre print:hidden">
             {environment.toUpperCase()} BUILD · USE SYNTHETIC RECORDS ONLY · NO REAL STUDENT INFORMATION
         </div>
     );
@@ -140,8 +185,152 @@ export function Card({ title, aside, children, className = '' }: { title?: strin
     );
 }
 
+interface TextAreaFieldProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+    label: string;
+    name: string;
+    error?: string;
+    hint?: string;
+    required?: boolean;
+}
+
+/** A ruled, index-card style text area with helper text and an inline error. */
+export function TextAreaField({ label, name, error, hint, required, id, rows = 4, ...props }: TextAreaFieldProps) {
+    const fieldId = id ?? name;
+    const describedBy = [hint ? `${fieldId}-hint` : null, error ? `${fieldId}-error` : null].filter(Boolean).join(' ') || undefined;
+
+    return (
+        <div className="flex min-w-0 flex-col gap-1.5">
+            <label htmlFor={fieldId} className="text-sm font-semibold">
+                {label} {required && <span className="font-bold text-brick" aria-hidden="true">*</span>}
+            </label>
+            <textarea
+                id={fieldId}
+                name={name}
+                rows={rows}
+                required={required}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={describedBy}
+                className={`w-full resize-y rounded bg-surface bg-[image:repeating-linear-gradient(to_bottom,transparent_0_27px,var(--card-rule)_27px_28px)] bg-[position:0_4px] bg-local px-3 py-1 text-[15px] leading-7 text-ink focus:border-green focus:outline-2 focus:outline-green-soft ${error ? 'border-[1.5px] border-brick' : 'border border-rule-2'}`}
+                {...props}
+            />
+            {hint && !error && (
+                <span id={`${fieldId}-hint`} className="text-[13px] text-ink-2">
+                    {hint}
+                </span>
+            )}
+            {error && <FieldError id={`${fieldId}-error`}>{error}</FieldError>}
+        </div>
+    );
+}
+
+/** Previous / next links for a Laravel paginator. */
+export function Pagination({ page, noun }: { page: { last_page: number; from: number | null; to: number | null; total: number; prev_page_url: string | null; next_page_url: string | null }; noun?: [string, string] }) {
+    if (page.last_page <= 1) {
+        return null;
+    }
+
+    const [previousLabel, nextLabel] = noun ?? ['Previous', 'Next'];
+
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-5 py-3 text-[13px] text-ink-2">
+            <span>
+                Showing {page.from}–{page.to} of {page.total}
+            </span>
+            <div className="flex gap-2">
+                {page.prev_page_url && (
+                    <Link href={page.prev_page_url} className={buttonClasses.quiet} preserveScroll>
+                        {previousLabel}
+                    </Link>
+                )}
+                {page.next_page_url && (
+                    <Link href={page.next_page_url} className={buttonClasses.quiet} preserveScroll>
+                        {nextLabel}
+                    </Link>
+                )}
+            </div>
+        </div>
+    );
+}
+
+/** Filter tabs that link to the same page with a query value. */
+export function FilterTabs({ label, options, current, href }: { label: string; options: { value: string; label: string }[]; current: string; href: (value: string) => string }) {
+    return (
+        <nav aria-label={label} className="flex flex-wrap gap-1">
+            {options.map((option) => (
+                <Link
+                    key={option.value}
+                    href={href(option.value)}
+                    aria-current={current === option.value ? 'page' : undefined}
+                    preserveScroll
+                    className={`inline-flex min-h-9 items-center rounded px-3 text-[13px] font-semibold ${current === option.value ? 'bg-ink text-surface' : 'text-ink-2 hover:bg-sunk hover:text-ink'}`}
+                >
+                    {option.label}
+                </Link>
+            ))}
+        </nav>
+    );
+}
+
+/** A dashed-code empty state used across lists and panels. */
+export function EmptyState({ code, heading, body, children }: { code: string; heading: string; body?: string; children?: ReactNode }) {
+    return (
+        <div className="flex items-start gap-4 px-5 py-7">
+            <span
+                aria-hidden="true"
+                className="inline-flex h-[22px] w-7 shrink-0 items-center justify-center rounded-sm border border-dashed border-rule-2 font-mono text-[11px] text-ink-2"
+            >
+                {code}
+            </span>
+            <div className="flex flex-col gap-1">
+                <p className="font-semibold">{heading}</p>
+                {body && <p className="max-w-prose text-sm text-ink-2">{body}</p>}
+                {children}
+            </div>
+        </div>
+    );
+}
+
 const dateTimeFormat = new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeStyle: 'short' });
+const dateFormat = new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium' });
+const timeFormat = new Intl.DateTimeFormat('en-PH', { hour: 'numeric', minute: '2-digit' });
 
 export function formatDateTime(iso: string | null): string {
     return iso ? dateTimeFormat.format(new Date(iso)) : 'Never';
+}
+
+/** Accepts "2026-11-04" (local date) or a full ISO timestamp. */
+export function formatDate(value: string | null): string {
+    if (!value) {
+        return '—';
+    }
+
+    return dateFormat.format(new Date(value.length === 10 ? `${value}T00:00:00` : value));
+}
+
+export function formatTime(iso: string): string {
+    return timeFormat.format(new Date(iso));
+}
+
+/** Stamp tones for every casework status, following the design system. */
+export function statusTone(status: string): StampTone {
+    switch (status) {
+        case 'scheduled':
+        case 'open':
+        case 'in_progress':
+        case 'under_review':
+        case 'for_follow_up':
+            return 'green';
+        case 'received':
+        case 'pending':
+        case 'rescheduled':
+        case 'on_hold':
+            return 'ochre';
+        case 'completed':
+        case 'enrolled':
+            return 'filed';
+        case 'overdue':
+            return 'brick';
+        default:
+            return 'neutral';
+    }
 }

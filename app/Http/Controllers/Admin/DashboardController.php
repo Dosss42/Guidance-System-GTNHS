@@ -7,6 +7,7 @@ use App\Enums\RoleSlug;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Services\BackupService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,8 +17,11 @@ class DashboardController extends Controller
      * Show the administrator overview. It holds account and system
      * information only, never guidance records.
      */
-    public function __invoke(): Response
+    public function __invoke(BackupService $backups): Response
     {
+        $passwordConfigured = strlen((string) config('backup.password')) >= 16;
+        $latestBackup = $passwordConfigured ? $backups->list()->first() : null;
+
         $activeByRole = User::active()
             ->join('roles', 'roles.id', '=', 'users.role_id')
             ->selectRaw('roles.slug as slug, count(*) as total')
@@ -39,6 +43,15 @@ class DashboardController extends Controller
                 ->limit(8)
                 ->get()
                 ->map(fn (AuditLog $log): array => AuditLogController::present($log)),
+            'backup' => [
+                'passwordConfigured' => $passwordConfigured,
+                'latest' => $latestBackup === null ? null : [
+                    'name' => $latestBackup['name'],
+                    'createdAt' => $latestBackup['createdAt'],
+                    'verifiedOk' => $latestBackup['verification']['ok'] ?? null,
+                    'verifiedAt' => $latestBackup['verification']['verifiedAt'] ?? null,
+                ],
+            ],
         ]);
     }
 }

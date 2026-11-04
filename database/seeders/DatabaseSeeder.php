@@ -44,6 +44,9 @@ class DatabaseSeeder extends Seeder
             'password' => $samplePassword,
         ]);
 
+        $this->call(SampleStudentSeeder::class);
+        $this->call(SampleCaseworkSeeder::class);
+
         $this->command?->info("Sample accounts created. Password for all: {$samplePassword}");
     }
 }

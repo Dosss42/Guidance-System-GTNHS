@@ -16,7 +16,7 @@ class AuditLogController extends Controller
      *
      * @var list<string>
      */
-    private const FILTERS = ['all', 'sign-in', 'accounts'];
+    private const FILTERS = ['all', 'sign-in', 'accounts', 'records', 'files', 'system'];
 
     /**
      * Show the read-only technical audit log.
@@ -28,6 +28,9 @@ class AuditLogController extends Controller
         $logs = AuditLog::with('user:id,name,email')
             ->when($filter === 'sign-in', fn ($query) => $query->whereIn('action', AuditAction::authenticationEvents()))
             ->when($filter === 'accounts', fn ($query) => $query->whereIn('action', AuditAction::accountEvents()))
+            ->when($filter === 'records', fn ($query) => $query->whereIn('action', AuditAction::recordEvents()))
+            ->when($filter === 'files', fn ($query) => $query->whereIn('action', AuditAction::fileEvents()))
+            ->when($filter === 'system', fn ($query) => $query->whereIn('action', AuditAction::systemEvents()))
             ->latest('created_at')
             ->latest('id')
             ->paginate(25)

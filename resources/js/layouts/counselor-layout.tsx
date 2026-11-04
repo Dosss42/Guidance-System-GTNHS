@@ -17,39 +17,41 @@ const navigation: { group: string; items: NavItem[] }[] = [
         group: 'Desk',
         items: [
             { code: 'TD', label: 'Today', href: '/counselor' },
-            { code: 'AP', label: 'Appointments' },
-            { code: 'FU', label: 'Follow-ups' },
+            { code: 'AP', label: 'Appointments', href: '/counselor/appointments' },
+            { code: 'FU', label: 'Follow-ups', href: '/counselor/follow-ups' },
         ],
     },
     {
         group: 'Records',
         items: [
-            { code: 'ST', label: 'Students' },
-            { code: 'DC', label: 'Documents' },
-            { code: 'PG', label: 'Parent / guardian' },
+            { code: 'ST', label: 'Students', href: '/counselor/students' },
+            { code: 'SY', label: 'School years', href: '/counselor/school-years' },
+            { code: 'DC', label: 'Documents', href: '/counselor/documents' },
+            { code: 'PG', label: 'Parent / guardian', href: '/counselor/coordination' },
         ],
     },
     {
         group: 'Casework',
         items: [
-            { code: 'RF', label: 'Referrals' },
-            { code: 'GC', label: 'Guidance cases' },
-            { code: 'CS', label: 'Sessions' },
-            { code: 'RP', label: 'Reports' },
+            { code: 'RF', label: 'Referrals', href: '/counselor/referrals' },
+            { code: 'GC', label: 'Guidance cases', href: '/counselor/cases' },
+            { code: 'RP', label: 'Reports', href: '/counselor/reports' },
         ],
     },
 ];
 
 export default function CounselorLayout({ title, children }: { title: string; children: ReactNode }) {
     const { auth } = usePage().props;
-    const currentUrl = usePage().url;
+    const currentPath = usePage().url.split('?')[0];
+    const isCurrent = (href?: string) =>
+        href !== undefined && (href === '/counselor' ? currentPath === href : currentPath === href || currentPath.startsWith(`${href}/`));
 
     return (
         <div className="min-h-screen">
             <Head title={title} />
             <EnvironmentBanner />
             <div className="flex flex-wrap">
-                <nav aria-label="Main" className="flex max-w-full flex-[1_1_236px] flex-col gap-5 border-r border-rule px-3.5 pt-5 pb-7">
+                <nav aria-label="Main" className="flex max-w-full flex-[1_1_236px] flex-col gap-5 border-r border-rule px-3.5 pt-5 pb-7 print:hidden">
                     <div className="flex items-center gap-2.5 px-1.5">
                         <Seal />
                         <div className="flex flex-col leading-tight">
@@ -63,7 +65,7 @@ export default function CounselorLayout({ title, children }: { title: string; ch
                             <span className="mono-label px-2.5">{section.group}</span>
                             <div className="flex flex-wrap gap-0.5">
                                 {section.items.map((item) => (
-                                    <NavEntry key={item.code} item={item} isCurrent={item.href !== undefined && currentUrl === item.href} />
+                                    <NavEntry key={item.code} item={item} isCurrent={isCurrent(item.href)} />
                                 ))}
                             </div>
                         </div>
@@ -73,10 +75,10 @@ export default function CounselorLayout({ title, children }: { title: string; ch
                         <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-green-soft font-mono text-xs font-semibold text-green">
                             {auth.user?.initials}
                         </span>
-                        <div className="flex min-w-0 flex-col leading-snug">
+                        <Link href="/account" className="flex min-w-0 flex-col leading-snug text-ink hover:text-green">
                             <span className="truncate text-[13px] font-semibold">{auth.user?.name}</span>
-                            <span className="text-xs text-ink-2">{auth.user?.role.label}</span>
-                        </div>
+                            <span className="text-xs text-ink-2">My account</span>
+                        </Link>
                         <Link href="/logout" method="post" as="button" className="ml-auto min-h-9 cursor-pointer text-[13px] font-semibold text-green hover:text-ink">
                             Sign out
                         </Link>

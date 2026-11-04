@@ -14,6 +14,25 @@ Start the app with `composer run dev`, then open **http://localhost:8000/login**
 
 Two counselor accounts are included so you can check shared access: each counselor signs in separately, and every entry is signed with the name of whoever made it.
 
+## Sample student records
+
+The local seeder also adds:
+- three school years: 2024–2025, 2025–2026 and 2026–2027 (the current one)
+- two sample sections for each grade from 7 to 12
+- 24 synthetic students, each with three years of enrollment history
+
+The names and LRNs are randomly generated and don't belong to real GTNHS students. Sign in as a counselor and open **Students** to see them.
+
+It also adds sample casework:
+- referrals, including some still waiting for review
+- three guidance cases (one in progress, one open, one closed)
+- two sealed counseling sessions
+- an overdue follow-up and an upcoming one
+- appointments for today and later this week
+- a parent/guardian contact
+
+Every session note says it's sample data. To try the sealed notes, open a case and click **Unseal notes**. Each unseal then shows up in the administrator's audit log.
+
 ## What to expect
 
 - Each role sees only its own workspace. A counselor who opens an `/admin` page gets "403 Forbidden", and so does an administrator who opens `/counselor`.
