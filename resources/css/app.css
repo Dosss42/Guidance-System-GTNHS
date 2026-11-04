@@ -1,0 +1,141 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/*
+ * GTNHS Guidance — "field" palette (design-system/gtnhs-guidance/MASTER.md).
+ * Colours come from the school seal, softened for all-day use.
+ * Tokens switch automatically for dark mode, so components never need `dark:` variants.
+ */
+:root {
+    --ground: #f4f1e8;
+    --surface: #fffdf7;
+    --sunk: #eeeadd;
+    --ink: #1c2a22;
+    --ink-2: #5a4d45;
+    --rule: #e2dccb;
+    --rule-2: #8c826f;
+    --green: #1e5e34;
+    --green-ink: #fffdf7;
+    --green-soft: #e4efe3;
+    --sprout: #4cb85a;
+    --gold: #e3b93a;
+    --ochre: #7a5600;
+    --ochre-soft: #f6ebc8;
+    --filed: #7a4a2a;
+    --filed-soft: #f1e6da;
+    --brick: #a8321e;
+    --brick-soft: #f7e4dc;
+    --folder: #e9ddbe;
+    --folder-ink: #3d3220;
+    --card-rule: #dce6d6;
+    --margin: #c9573f;
+    --band: #17442a;
+    --band-ink: #f4f1e8;
+    --band-2: #c3d6c7;
+    --band-on: #235a38;
+    --admin-band: #1f2a24;
+    --admin-band-ink: #ece8dc;
+    --admin-band-2: #b9c2b8;
+    --admin-band-on: #2e3b33;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ground: #141a16;
+        --surface: #1c241f;
+        --sunk: #171e1a;
+        --ink: #ece8dc;
+        --ink-2: #bdb4a6;
+        --rule: #2f3a33;
+        --rule-2: #66736a;
+        --green: #7cc48a;
+        --green-ink: #102016;
+        --green-soft: #203527;
+        --gold: #e3c15a;
+        --ochre: #e3c15a;
+        --ochre-soft: #332b14;
+        --filed: #d9a77e;
+        --filed-soft: #33261c;
+        --brick: #f0957f;
+        --brick-soft: #3a221b;
+        --folder: #3a3324;
+        --folder-ink: #ebddbb;
+        --card-rule: #26302a;
+        --margin: #a9503e;
+        --band: #0f2618;
+        --band-ink: #ece8dc;
+        --band-2: #a9bdae;
+        --band-on: #1d3a27;
+        --admin-band: #0c110e;
+        --admin-band-ink: #ece8dc;
+        --admin-band-2: #a9b3a9;
+        --admin-band-on: #1c2620;
+    }
+}
+
+@theme inline {
+    --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+    --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
+    --font-display: var(--font-newsreader), Georgia, serif;
+
+    --color-ground: var(--ground);
+    --color-surface: var(--surface);
+    --color-sunk: var(--sunk);
+    --color-ink: var(--ink);
+    --color-ink-2: var(--ink-2);
+    --color-rule: var(--rule);
+    --color-rule-2: var(--rule-2);
+    --color-green: var(--green);
+    --color-green-ink: var(--green-ink);
+    --color-green-soft: var(--green-soft);
+    --color-sprout: var(--sprout);
+    --color-gold: var(--gold);
+    --color-ochre: var(--ochre);
+    --color-ochre-soft: var(--ochre-soft);
+    --color-filed: var(--filed);
+    --color-filed-soft: var(--filed-soft);
+    --color-brick: var(--brick);
+    --color-brick-soft: var(--brick-soft);
+    --color-folder: var(--folder);
+    --color-folder-ink: var(--folder-ink);
+    --color-card-rule: var(--card-rule);
+    --color-margin: var(--margin);
+    --color-band: var(--band);
+    --color-band-ink: var(--band-ink);
+    --color-band-2: var(--band-2);
+    --color-band-on: var(--band-on);
+    --color-admin-band: var(--admin-band);
+    --color-admin-band-ink: var(--admin-band-ink);
+    --color-admin-band-2: var(--admin-band-2);
+    --color-admin-band-on: var(--admin-band-on);
+
+    --radius-sm: 2px;
+    --radius: 3px;
+    --radius-tab: 6px;
+}
+
+@layer base {
+    html {
+        background-color: var(--ground);
+        color: var(--ink);
+    }
+
+    body {
+        @apply min-h-screen bg-ground font-sans text-[15px] leading-normal text-ink antialiased;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--green);
+        outline-offset: 2px;
+    }
+}
+
+@utility ruled-card {
+    background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--card-rule) 31px 32px);
+}
+
+@utility mono-label {
+    @apply font-mono text-[11px] font-medium tracking-[0.1em] text-ink-2 uppercase;
+}
