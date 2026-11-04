@@ -65,7 +65,9 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // GTNHS is in the Philippines: appointments, "today" and audit times are
+    // all Philippine time. Change only if the server is used elsewhere.
+    'timezone' => env('APP_TIMEZONE', 'Asia/Manila'),
 
     /*
     |--------------------------------------------------------------------------

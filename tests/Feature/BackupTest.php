@@ -10,6 +10,7 @@ use App\Models\Student;
 use App\Models\User;
 use App\Services\BackupService;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -42,6 +43,14 @@ class BackupTest extends TestCase
         parent::tearDown();
     }
 
+    /**
+     * SQLite backups hold a database file; MySQL/MariaDB backups hold a SQL dump.
+     */
+    private function databaseEntry(): string
+    {
+        return DB::connection()->getDriverName() === 'sqlite' ? 'database/database.sqlite' : 'database/dump.sql';
+    }
+
     public function test_a_backup_is_encrypted_and_contains_the_database_and_documents(): void
     {
         $document = Document::factory()->create();
@@ -51,7 +60,7 @@ class BackupTest extends TestCase
 
         $zip = new ZipArchive;
         $zip->open($this->backupDirectory.'/'.$backup['name']);
-        $this->assertNotFalse($zip->locateName('database/database.sqlite'));
+        $this->assertNotFalse($zip->locateName($this->databaseEntry()));
         $this->assertNotFalse($zip->locateName('files/'.$document->storage_path));
         $this->assertFalse($zip->getFromName('manifest.json'), 'Entries must not be readable without the password.');
 
@@ -75,7 +84,7 @@ class BackupTest extends TestCase
         $zip = new ZipArchive;
         $zip->open($this->backupDirectory.'/'.$backup['name']);
         $zip->setPassword('test-backup-password-1234');
-        $database = (string) $zip->getFromName('database/database.sqlite');
+        $database = (string) $zip->getFromName($this->databaseEntry());
         $zip->close();
 
         $this->assertNotSame('', $database);
@@ -92,13 +101,13 @@ class BackupTest extends TestCase
 
         $zip = new ZipArchive;
         $zip->open($this->backupDirectory.'/'.$backup['name']);
-        $zip->addFromString('database/database.sqlite', 'not a database');
-        $zip->setEncryptionName('database/database.sqlite', ZipArchive::EM_AES_256, 'test-backup-password-1234');
+        $zip->addFromString($this->databaseEntry(), 'not a database');
+        $zip->setEncryptionName($this->databaseEntry(), ZipArchive::EM_AES_256, 'test-backup-password-1234');
         $zip->close();
 
         $result = $service->verify($backup['name']);
         $this->assertFalse($result['ok']);
-        $this->assertContains('Checksum mismatch: database/database.sqlite', $result['problems']);
+        $this->assertContains('Checksum mismatch: '.$this->databaseEntry(), $result['problems']);
     }
 
     public function test_backups_refuse_to_run_without_a_strong_password(): void
